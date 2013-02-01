@@ -7,29 +7,14 @@ fun same_string(s1 : string, s2 : string) =
     s1 = s2
 
 (* put your solutions for problem 1 here *)
-fun all_except_option2 (str : string, sl : string list ) =
-let fun aux(str : string, sl : string list ) =
-      case sl of
-       [] => []
-       | h::t => if same_string(str,h) = false then
-                    h::aux(str,t)
-                 else
-                    aux(str,t)
-in
-     let val ans = aux(str, sl)
-     in case ans of
-        [] => NONE
-        | _ => SOME (ans)
-     end
-end;
 
-fun all_except_option(str : string, sl: string list)=
+fun all_except_option(str, sl)=
 let
-  fun exist(str, sl: string list)=
+  fun exist(str, sl)=
     case sl of
          [] => false
        | hd::tl => if same_string(hd,str) then true else exist(str, tl)
-  fun aux(str : string, sl : string list ) =
+  fun aux(str, sl) =
     case sl of
          [] => []
        | h::t => if same_string(str,h) then aux(str,t) else h::aux(str,t)
@@ -40,7 +25,7 @@ in
     SOME(aux(str, sl))
 end
 
-fun get_substitutions1(names_list : string list list, name : string)=
+fun get_substitutions1(names_list , name)=
   case names_list of
        [] => []
      | name_list_head::name_list_tail =>
@@ -48,9 +33,9 @@ fun get_substitutions1(names_list : string list list, name : string)=
               NONE => get_substitutions1(name_list_tail, name)
             | SOME names => names @ get_substitutions1(name_list_tail,name)
 
-fun get_substitutions2(names_list : string list list, name : string)=
+fun get_substitutions2(names_list, name)=
 let
-  fun aux(names_list : string list list, name : string, acc : string list)=
+  fun aux(names_list, name, acc)=
     case names_list of
          [] => acc
        | names_list_head::names_list_tail =>
@@ -61,10 +46,10 @@ in
   aux(names_list, name, [])
 end
 
-fun similar_names(names_list : string list list, {first = f, middle = m, last = l})=
+fun similar_names(names_list, {first = f, middle = m, last = l})=
 let
   val names = get_substitutions2(names_list, f)
-  fun aux(names : string list)=
+  fun aux(names )=
     case names of
          [] => []
        | h::t => {first = h , middle = m,last = l}::aux(t)
@@ -84,4 +69,36 @@ datatype move = Discard of card | Draw
 
 exception IllegalMove
 
-(* put your solutions for problem 2 here *)
+fun card_color c  =
+  case c of
+       (Diamonds, _) => Red
+     | (Hearts, _) => Red
+     | _ => Black
+
+fun card_value c =
+  case c of
+       (_, Num num) => num
+     | (_, Ace) => 11
+     | _ => 10
+
+fun remove_card (cs, c, ex) =
+case cs of
+     [] => raise ex
+   | h::t => if h = c then c else remove_card(t, c, ex)
+
+fun all_same_color cs =
+  case cs of
+       [] => true
+     | head::(neck::rest) => (card_color(head) = card_color(neck)) andalso
+     all_same_color (neck::rest)
+
+fun sum_cards cs =
+let fun aux(sc, acc) =
+case sc of
+     [] => acc
+   | h::t => aux(t, h + acc)
+in
+  aux(cs,0)
+end
+
+
