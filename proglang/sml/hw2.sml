@@ -84,21 +84,93 @@ fun card_value c =
 fun remove_card (cs, c, ex) =
 case cs of
      [] => raise ex
-   | h::t => if h = c then c else remove_card(t, c, ex)
+   | h::t => if h = c then t else remove_card(t, c, ex)
 
 fun all_same_color cs =
   case cs of
-       [] => true
-     | head::(neck::rest) => (card_color(head) = card_color(neck)) andalso
-     all_same_color (neck::rest)
+      head::(neck::rest) => (card_color(head) = card_color(neck)) andalso
+       all_same_color (neck::rest)
+    | _ => true
 
 fun sum_cards cs =
 let fun aux(sc, acc) =
 case sc of
      [] => acc
-   | h::t => aux(t, h + acc)
+   | h::t => aux(t, card_value h + acc)
 in
   aux(cs,0)
 end
+
+fun score (held, goal)=
+let 
+  fun calc_preliminary ()=
+  let val sum = sum_cards held
+  in
+    if sum > goal then 3*(sum - goal) else goal - sum
+  end
+
+  val prelim_score = calc_preliminary()
+in
+  if all_same_color held = true  then prelim_score else (prelim_score div 2)
+end
+
+fun officiate(cards, moves, goal)=
+let
+  fun do_move(cards, moves, held)=
+    case moves of
+        [] => (cards, moves, held)
+      | moves_head::moves_tail => 
+         case moves_head of 
+             Draw =>
+               (* do_draw *)
+               case cards of 
+                 top_card::cards_tail => 
+                    if sum_cards (top_card::held) < goal
+                    then
+                      do_move(cards_tail, moves_tail, top_card::held)
+                    else
+                      (cards, moves_tail, held)
+                (* cards is empty *)
+                | [] => (cards, moves_tail, held)
+
+           | Discard disc_card =>
+               (* do_discard *)
+               do_move(cards, moves_tail, remove_card(held, disc_card, IllegalMove)) 
+
+  val (_,_,res_held) = do_move(cards, moves, [])
+in
+  (* score (res_held, goal) *)
+  res_held
+end
+
+(* These are just two tests for problem 2; you will want more.
+
+   Naturally these tests and your tests will use bindings defined 
+   in your solution, in particular the officiate function, 
+   so they will not type-check if officiate is not defined.
+ *)
+
+fun provided_test1 () = (* correct behavior: raise IllegalMove *)
+    let val cards = [(Clubs,Jack),(Spades,Num(8))]
+	val moves = [Draw,Discard(Hearts,Jack)]
+    in
+	officiate(cards,moves,42)
+    end
+
+fun provided_test2 () = (* correct behavior: return 3 *)
+    let val cards = [(Clubs,Ace),(Spades,Ace),(Clubs,Ace),(Spades,Ace)]
+	val moves = [Draw,Draw,Draw,Draw,Draw]
+    in
+ 	officiate(cards,moves,42)
+    end
+
+val res1 = provided_test1()
+val res2 = provided_test2()
+
+
+
+
+
+
 
 
