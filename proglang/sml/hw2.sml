@@ -111,37 +111,29 @@ let
 
   val prelim_score = calc_preliminary()
 in
-  if all_same_color held = true  then prelim_score else (prelim_score div 2)
+  if all_same_color held = true  then (prelim_score div 2) else prelim_score
 end
 
 fun officiate(cards, moves, goal)=
 let
   fun do_move(cards, moves, held)=
     case (cards, moves, held) of
-         (_, [], _) => (cards, moves, held)
-       | (cards_head, moves_head::moves_tail, held)
-       | moves_head::moves_tail => 
-         case moves_head of 
-             Draw =>
-               (* do_draw *)
-               case cards of 
-                 top_card::cards_tail => 
-                    if sum_cards (top_card::held) < goal
-                    then
-                      do_move(cards_tail, moves_tail, top_card::held)
-                    else
-                      (cards, moves_tail, held)
-                (* cards is empty *)
-                | [] => (cards, moves_tail, held)
-
-           | Discard disc_card =>
-               (* do_discard *)
-               do_move(cards, moves_tail, remove_card(held, disc_card, IllegalMove)) 
-
+       (* Draw *)
+         (top_card::cards_tail, Draw::moves_tail, held) =>
+           if sum_cards (top_card::held) < goal
+           then
+             do_move(cards_tail, moves_tail, top_card::held)
+           else
+             (cards, moves_tail, top_card::held)
+       (* Discard *)
+       | (_, (Discard disc_card)::moves_tail, held) => 
+           do_move(cards, moves_tail, remove_card(held, disc_card, IllegalMove)) 
+       (* game over *)
+       | _ => (cards, moves, held)
   val (_,_,res_held) = do_move(cards, moves, [])
 in
-  (* score (res_held, goal) *)
-  res_held
+  score (res_held, goal) 
+  (* res_held *)
 end
 
 (* These are just two tests for problem 2; you will want more.
@@ -165,7 +157,7 @@ fun provided_test2 () = (* correct behavior: return 3 *)
  	officiate(cards,moves,42)
     end
 
-val res1 = provided_test1()
+    (* val res1 = provided_test1() *)
 val res2 = provided_test2()
 
 
