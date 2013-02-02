@@ -117,9 +117,10 @@ end
 fun officiate(cards, moves, goal)=
 let
   fun do_move(cards, moves, held)=
-    case moves of
-        [] => (cards, moves, held)
-      | moves_head::moves_tail => 
+    case (cards, moves, held) of
+         (_, [], _) => (cards, moves, held)
+       | (cards_head, moves_head::moves_tail, held)
+       | moves_head::moves_tail => 
          case moves_head of 
              Draw =>
                (* do_draw *)
